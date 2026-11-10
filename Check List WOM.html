@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WOM Document Dashboard</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Font (Kanit) -->
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Kanit', sans-serif; }
+    </style>
+</head>
+<body class="bg-slate-50 min-h-screen text-slate-800">
+
+    <!-- Header / Navigation -->
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-10">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
+            <div class="flex items-center space-x-3">
+                <div class="bg-indigo-600 text-white p-2.5 rounded-xl shadow-md shadow-indigo-200">
+                    <i class="fa-solid fa-file-invoice text-xl"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold text-slate-900">Check List WOM</h1>
+                    <p class="text-xs text-slate-500">ระบบติดตาม ระบบจ่ายงานบริการลูกค้าอัจฉริยะ (WOM)</p>
+                </div>
+            </div>
+            <button onclick="fetchData()" class="flex items-center gap-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 px-4 py-2 rounded-lg transition font-medium text-sm">
+                <i class="fa-solid fa-rotate-right"></i> รีเฟรชข้อมูล
+            </button>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+        <!-- Stat Cards Summary -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+            <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex items-center justify-between">
+                <div>
+                    <p class="text-xs font-medium text-slate-400">รายการทั้งหมด</p>
+                    <h3 id="stat-total" class="text-2xl font-bold text-slate-800 mt-1">0</h3>
+                </div>
+                <div class="w-12 h-12 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center text-lg">
+                    <i class="fa-solid fa-folder-open"></i>
+                </div>
+            </div>
+            <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex items-center justify-between">
+                <div>
+                    <p class="text-xs font-medium text-slate-400">ดำเนินแล้ว</p>
+                    <h3 id="stat-completed" class="text-2xl font-bold text-emerald-600 mt-1">0</h3>
+                </div>
+                <div class="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-xl flex items-center justify-center text-lg">
+                    <i class="fa-solid fa-circle-check"></i>
+                </div>
+            </div>
+            <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex items-center justify-between">
+                <div>
+                    <p class="text-xs font-medium text-slate-400">อยู่ระหว่างดำเนินการ</p>
+                    <h3 id="stat-pending" class="text-2xl font-bold text-amber-500 mt-1">0</h3>
+                </div>
+                <div class="w-12 h-12 bg-amber-50 text-amber-500 rounded-xl flex items-center justify-center text-lg">
+                    <i class="fa-solid fa-clock"></i>
+                </div>
+            </div>
+            <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex items-center justify-between">
+                <div>
+                    <p class="text-xs font-medium text-slate-400">ล่าช้า / อื่นๆ</p>
+                    <h3 id="stat-progress" class="text-2xl font-bold text-rose-600 mt-1">0</h3>
+                </div>
+                <div class="w-12 h-12 bg-rose-50 text-rose-600 rounded-xl flex items-center justify-center text-lg">
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filter Controls -->
+        <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm mb-6 flex flex-col md:flex-row gap-4 justify-between items-center">
+            <div class="flex flex-col md:flex-row gap-3 w-full md:w-auto">
+                <!-- Filter Month -->
+                <select id="filter-month" onchange="applyFilters()" class="bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    <option value="">ทุกเดือน (มกราคม - ธันวาคม)</option>
+                    <option value="มกราคม">มกราคม</option>
+                    <option value="กุมภาพันธ์">กุมภาพันธ์</option>
+                    <option value="มีนาคม">มีนาคม</option>
+                    <option value="เมษายน">เมษายน</option>
+                    <option value="พฤษภาคม">พฤษภาคม</option>
+                    <option value="มิถุนายน">มิถุนายน</option>
+                    <option value="กรกฎาคม">กรกฎาคม</option>
+                    <option value="สิงหาคม">สิงหาคม</option>
+                    <option value="กันยายน">กันยายน</option>
+                    <option value="ตุลาคม">ตุลาคม</option>
+                    <option value="พฤศจิกายน">พฤศจิกายน</option>
+                    <option value="ธันวาคม">ธันวาคม</option>
+                </select>
+
+                <!-- Filter Status -->
+                <select id="filter-status" onchange="applyFilters()" class="bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    <option value="">ทุกสถานะ</option>
+                    <option value="ดำเนินแล้ว">ดำเนินแล้ว</option>
+                    <option value="อยู่ระหว่างดำเนินการ">อยู่ระหว่างดำเนินการ</option>
+                    <option value="ล่าช้า">ล่าช้า</option>
+                </select>
+            </div>
+
+            <!-- Search Box -->
+            <div class="relative w-full md:w-72">
+                <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-3 text-slate-400 text-sm"></i>
+                <input type="text" id="search-input" onkeyup="applyFilters()" placeholder="ค้นหาเลขที่หนังสือ..." 
+                    class="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+            </div>
+        </div>
+
+        <!-- Data Table Container -->
+        <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse text-sm">
+                    <thead>
+                        <tr class="bg-slate-50/70 border-b border-slate-200 text-slate-500 font-medium">
+                            <th class="py-4 px-6">ลำดับ</th>
+                            <th class="py-4 px-6">เดือน</th>
+                            <th class="py-4 px-6">เลขที่หนังสือ</th>
+                            <th class="py-4 px-6">สถานะ</th>
+                            <th class="py-4 px-6 text-center">เอกสารแนบ (PDF)</th>
+                            <th class="py-4 px-6">วันที่อัพเดท</th>
+                        </tr>
+                    </thead>
+                    <tbody id="data-table" class="divide-y divide-slate-100 text-slate-700">
+                        <tr>
+                            <td colspan="6" class="py-12 text-center text-slate-400">
+                                <i class="fa-solid fa-spinner animate-spin text-2xl mb-2"></i>
+                                <p>กำลังโหลดข้อมูล...</p>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <!-- Modal Preview PDF -->
+    <div id="pdf-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl w-full max-w-4xl h-[85vh] flex flex-col overflow-hidden shadow-2xl">
+            <div class="px-6 py-4 border-b border-slate-200 flex justify-between items-center bg-slate-50">
+                <div class="flex items-center space-x-2">
+                    <i class="fa-solid fa-file-pdf text-red-500 text-xl"></i>
+                    <h3 id="modal-title" class="font-semibold text-slate-800">แสดงตัวอย่างเอกสาร</h3>
+                </div>
+                <div class="flex items-center gap-2">
+                    <a id="modal-download" href="#" target="_blank" class="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-medium px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition">
+                        <i class="fa-solid fa-download"></i> ดาวน์โหลด
+                    </a>
+                    <button onclick="closePdfModal()" class="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg">
+                        <i class="fa-solid fa-xmark text-lg"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="flex-1 bg-slate-100">
+                <iframe id="pdf-frame" src="" class="w-full h-full border-none"></iframe>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const SHEET_ID = '1_e5Wct97w1fBu5gM4Dt53WtrMXN6zetiAJVu7YMaySg'; 
+        const SHEET_TITLE = 'WOM'; // ชื่อ Sheet แท็บจริงของคุณ
+
+        const SHEET_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${SHEET_TITLE}`;
+
+        // ข้อมูลตั้งต้นที่ดึงมาจาก Google Sheet ล่าสุด (กรณีออนไลน์ยังดึงไม่ได้จะแสดงชุดนี้แทน)
+        const initialSheetData = [
+            { month: 'มกราคม', status: '', docNo: '', pdfUrl: '', updatedAt: '' },
+            { month: 'กุมภาพันธ์', status: '', docNo: '', pdfUrl: '', updatedAt: '' },
+            { month: 'มีนาคม', status: '', docNo: '', pdfUrl: '', updatedAt: '' },
+            { month: 'เมษายน', status: 'ดำเนินแล้ว', docNo: 'ฉ.2กดส.(สซ)917/2569', pdfUrl: 'https://drive.google.com/file/d/1Bu30itorOA1mvQLdCoYAAbaM6JK_A6xA/view?usp=sharing', updatedAt: '' },
+            { month: 'พฤษภาคม', status: 'ดำเนินแล้ว', docNo: 'ฉ.2กดส.(สซ)1083/2569', pdfUrl: 'https://drive.google.com/file/d/11E6rVN68NU_atjkXIloCxfXwnhhBOU3V/view?usp=sharing', updatedAt: '' },
+            { month: 'มิถุนายน', status: 'ดำเนินแล้ว', docNo: 'ฉ.2กดส.(ปด)1265/2569', pdfUrl: 'https://drive.google.com/file/d/1W0sczxUpnZXBCTnLPnM7s7g5Yi-DdI6K/view?usp=sharing', updatedAt: '' },
+            { month: 'กรกฎาคม', status: 'ล่าช้า', docNo: '', pdfUrl: 'https://drive.google.com/file/d/1N0Re21pOhSh0bnEp5fM76h_jFd46rPm9/view?usp=sharing', updatedAt: '' },
+            { month: 'สิงหาคม', status: 'ดำเนินแล้ว', docNo: 'ฉ.2กดส.(ปด)1774/2569', pdfUrl: 'https://drive.google.com/file/d/1Bu30itorOA1mvQLdCoYAAbaM6JK_A6xA/view?usp=sharing', updatedAt: '' },
+            { month: 'กันยายน', status: 'ดำเนินแล้ว', docNo: 'ฉ.2กดส.(สซ)1953/2569', pdfUrl: 'https://drive.google.com/file/d/14T3gFMQwbACR1_tQevAK-X6Krmmv0nxZ/view?usp=sharing', updatedAt: '' },
+            { month: 'ตุลาคม', status: 'อยู่ระหว่างดำเนินการ', docNo: 'ฉ.2กดส.(สซ)2034/2569', pdfUrl: '', updatedAt: '' },
+            { month: 'พฤศจิกายน', status: '', docNo: '', pdfUrl: '', updatedAt: '' },
+            { month: 'ธันวาคม', status: '', docNo: '', pdfUrl: '', updatedAt: '' }
+        ];
+
+        let rawData = [];
+
+        async function fetchData() {
+            try {
+                const res = await fetch(SHEET_URL);
+                const text = await res.text();
+                
+                const json = JSON.parse(text.substring(47, text.length - 2));
+                const rows = json.table.rows;
+
+                rawData = rows.map(row => ({
+                    month: row.c[0] ? row.c[0].v : '',
+                    status: row.c[1] ? row.c[1].v : '',
+                    docNo: row.c[2] ? row.c[2].v : '',
+                    pdfUrl: row.c[3] ? row.c[3].v : '',
+                    updatedAt: row.c[4] ? row.c[4].v : ''
+                }));
+
+                updateStats(rawData);
+                renderTable(rawData);
+            } catch (err) {
+                console.warn("ไม่สามารถดึงข้อมูลแบบ Live Stream ได้ กำลังใช้ออฟไลน์สแนปชอตที่ตรงกับ Sheet:", err);
+                rawData = initialSheetData;
+                updateStats(rawData);
+                renderTable(rawData);
+            }
+        }
+
+        function renderTable(data) {
+            const tableBody = document.getElementById('data-table');
+            if (data.length === 0) {
+                tableBody.innerHTML = `<tr><td colspan="6" class="py-8 text-center text-slate-400">ไม่พบข้อมูลในตาราง</td></tr>`;
+                return;
+            }
+
+            tableBody.innerHTML = data.map((item, index) => {
+                const statusBadge = getStatusBadge(item.status);
+                const pdfButton = item.pdfUrl 
+                    ? `<button onclick="openPdfModal('${item.pdfUrl}', '${item.docNo || item.month}')" 
+                          class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-red-50 hover:bg-red-100 text-red-600 rounded-lg text-xs font-medium border border-red-200 transition shadow-sm">
+                          <i class="fa-solid fa-file-pdf text-sm text-red-500"></i> ดูเอกสาร
+                       </button>`
+                    : `<span class="text-xs text-slate-300">ไม่มีไฟล์</span>`;
+
+                return `
+                    <tr class="hover:bg-slate-50/80 transition">
+                        <td class="py-3.5 px-6 font-medium text-slate-400">${index + 1}</td>
+                        <td class="py-3.5 px-6 font-medium text-slate-800">${item.month || '-'}</td>
+                        <td class="py-3.5 px-6 font-semibold text-indigo-950">${item.docNo || '-'}</td>
+                        <td class="py-3.5 px-6">${statusBadge}</td>
+                        <td class="py-3.5 px-6 text-center">${pdfButton}</td>
+                        <td class="py-3.5 px-6 text-slate-500 text-xs">${item.updatedAt || '-'}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function getStatusBadge(status) {
+            const cleanStatus = status?.trim();
+            switch(cleanStatus) {
+                case 'ดำเนินแล้ว':
+                case 'เสร็จสิ้น':
+                    return `<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>ดำเนินแล้ว</span>`;
+                case 'อยู่ระหว่างดำเนินการ':
+                case 'รอดำเนินการ':
+                case 'ดำเนินการ':
+                    return `<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-amber-50 text-amber-700 border border-amber-200"><span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>อยู่ระหว่างดำเนินการ</span>`;
+                case 'ล่าช้า':
+                case 'ยกเลิก':
+                    return `<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-rose-50 text-rose-700 border border-rose-200"><span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span>ล่าช้า</span>`;
+                default:
+                    return `<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-600">${status || '-'}</span>`;
+            }
+        }
+
+        function updateStats(data) {
+            document.getElementById('stat-total').innerText = data.length;
+            document.getElementById('stat-completed').innerText = data.filter(d => d.status?.trim() === 'ดำเนินแล้ว' || d.status?.trim() === 'เสร็จสิ้น').length;
+            document.getElementById('stat-pending').innerText = data.filter(d => d.status?.trim() === 'อยู่ระหว่างดำเนินการ' || d.status?.trim() === 'รอดำเนินการ' || d.status?.trim() === 'ดำเนินการ').length;
+            document.getElementById('stat-progress').innerText = data.filter(d => d.status?.trim() === 'ล่าช้า' || d.status?.trim() === 'ยกเลิก').length;
+        }
+
+        function applyFilters() {
+            const monthVal = document.getElementById('filter-month').value;
+            const statusVal = document.getElementById('filter-status').value;
+            const searchVal = document.getElementById('search-input').value.toLowerCase();
+
+            const filtered = rawData.filter(item => {
+                const matchMonth = !monthVal || item.month === monthVal;
+                const matchStatus = !statusVal || item.status?.trim() === statusVal;
+                const matchSearch = !searchVal || item.docNo?.toLowerCase().includes(searchVal);
+                return matchMonth && matchStatus && matchSearch;
+            });
+
+            renderTable(filtered);
+        }
+
+        function openPdfModal(url, docNo) {
+            let embedUrl = url;
+            if (url.includes('drive.google.com')) {
+                embedUrl = url.replace(/\/view.*$/, '/preview');
+            }
+
+            document.getElementById('modal-title').innerText = `เอกสารแนบ: ${docNo}`;
+            document.getElementById('pdf-frame').src = embedUrl;
+            document.getElementById('modal-download').href = url;
+            document.getElementById('pdf-modal').classList.remove('hidden');
+        }
+
+        function closePdfModal() {
+            document.getElementById('pdf-modal').classList.add('hidden');
+            document.getElementById('pdf-frame').src = '';
+        }
+
+        fetchData();
+    </script>
+</body>
+</html>
