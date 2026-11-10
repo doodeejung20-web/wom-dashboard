@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WOM Document Dashboard</title>
+    <title>Check List WOM - Dashboard</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- FontAwesome for Icons -->
@@ -165,11 +165,10 @@
 
     <script>
         const SHEET_ID = '1_e5Wct97w1fBu5gM4Dt53WtrMXN6zetiAJVu7YMaySg'; 
-        const SHEET_TITLE = 'WOM'; // ชื่อ Sheet แท็บจริงของคุณ
+        const SHEET_TITLE = 'WOM';
 
         const SHEET_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${SHEET_TITLE}`;
 
-        // ข้อมูลตั้งต้นที่ดึงมาจาก Google Sheet ล่าสุด (กรณีออนไลน์ยังดึงไม่ได้จะแสดงชุดนี้แทน)
         const initialSheetData = [
             { month: 'มกราคม', status: '', docNo: '', pdfUrl: '', updatedAt: '' },
             { month: 'กุมภาพันธ์', status: '', docNo: '', pdfUrl: '', updatedAt: '' },
@@ -192,6 +191,7 @@
                 const res = await fetch(SHEET_URL);
                 const text = await res.text();
                 
+                // แก้ไข Syntax Error บริเวณนี้เรียบร้อยแล้ว
                 const json = JSON.parse(text.substring(47, text.length - 2));
                 const rows = json.table.rows;
 
