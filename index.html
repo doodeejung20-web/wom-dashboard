@@ -187,31 +187,32 @@
         let rawData = [];
 
         async function fetchData() {
-            try {
-                const res = await fetch(SHEET_URL);
-                const text = await res.text();
-                
-                // แก้ไข Syntax Error บริเวณนี้เรียบร้อยแล้ว
-                const json = JSON.parse(text.substring(47, text.length - 2));
-                const rows = json.table.rows;
+    try {
+        const res = await fetch(SHEET_URL);
+        const text = await res.text();
+        
+        const json = JSON.parse(text.substring(47, text.length - 2));
+        
+        //  ตัดแถวแรกสุด (Header) ออก โดยใช้ .slice(1)
+        const rows = json.table.rows.slice(1);
 
-                rawData = rows.map(row => ({
-                    month: row.c[0] ? row.c[0].v : '',
-                    status: row.c[1] ? row.c[1].v : '',
-                    docNo: row.c[2] ? row.c[2].v : '',
-                    pdfUrl: row.c[3] ? row.c[3].v : '',
-                    updatedAt: row.c[4] ? row.c[4].v : ''
-                }));
+        rawData = rows.map(row => ({
+            month: row.c[0] ? row.c[0].v : '',
+            status: row.c[1] ? row.c[1].v : '',
+            docNo: row.c[2] ? row.c[2].v : '',
+            pdfUrl: row.c[3] ? row.c[3].v : '',
+            updatedAt: row.c[4] ? row.c[4].v : ''
+        }));
 
-                updateStats(rawData);
-                renderTable(rawData);
-            } catch (err) {
-                console.warn("ไม่สามารถดึงข้อมูลแบบ Live Stream ได้ กำลังใช้ออฟไลน์สแนปชอตที่ตรงกับ Sheet:", err);
-                rawData = initialSheetData;
-                updateStats(rawData);
-                renderTable(rawData);
-            }
-        }
+        updateStats(rawData);
+        renderTable(rawData);
+    } catch (err) {
+        console.warn("ไม่สามารถดึงข้อมูลแบบ Live Stream ได้ กำลังใช้ออฟไลน์สแนปชอตที่ตรงกับ Sheet:", err);
+        rawData = initialSheetData;
+        updateStats(rawData);
+        renderTable(rawData);
+    }
+}
 
         function renderTable(data) {
             const tableBody = document.getElementById('data-table');
