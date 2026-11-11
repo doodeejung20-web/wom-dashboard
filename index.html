@@ -180,7 +180,7 @@
     </div>
 
     <script>
-        // กำหนด ID ของ Google Sheets ทั้งหมด
+        // กำหนด ID ของ Google Sheets ทั้ง 4 แหล่ง
         const SHEETS = {
             WOM: { id: '1_e5Wct97w1fBu5gM4Dt53WtrMXN6zetiAJVu7YMaySg', title: 'WOM' },
             SMART_PLUS: { id: '160OfrbyIp3f0ItwHdmt2HXu58O4-2QW1C6asCRTH8ec', title: 'Sheet1' },
@@ -188,23 +188,10 @@
             EBILL: { id: '1jNq3Eueo2byJHdUQ--8MMW2tIw-fDJTG5CiejgrCr5A', title: 'Sheet1' }
         };
 
-        // ตั้งค่า Sheet เริ่มต้นเป็น Smart Plus
+        // ค่าเริ่มต้นเป็น Smart Plus
         let currentSheet = SHEETS.SMART_PLUS;
 
-        const initialSheetData = [
-            { month: 'มกราคม', status: '', docNo: '', pdfUrl: '', updatedAt: '' },
-            { month: 'กุมภาพันธ์', status: '', docNo: '', pdfUrl: '', updatedAt: '' },
-            { month: 'มีนาคม', status: '', docNo: '', pdfUrl: '', updatedAt: '' },
-            { month: 'เมษายน', status: 'ดำเนินแล้ว', docNo: 'ฉ.2กดส.(สซ)917/2569', pdfUrl: 'https://drive.google.com/file/d/1Bu30itorOA1mvQLdCoYAAbaM6JK_A6xA/view?usp=sharing', updatedAt: '' },
-            { month: 'พฤษภาคม', status: 'ดำเนินแล้ว', docNo: 'ฉ.2กดส.(สซ)1083/2569', pdfUrl: 'https://drive.google.com/file/d/11E6rVN68NU_atjkXIloCxfXwnhhBOU3V/view?usp=sharing', updatedAt: '' },
-            { month: 'มิถุนายน', status: 'ดำเนินแล้ว', docNo: 'ฉ.2กดส.(ปด)1265/2569', pdfUrl: 'https://drive.google.com/file/d/1W0sczxUpnZXBCTnLPnM7s7g5Yi-DdI6K/view?usp=sharing', updatedAt: '' },
-            { month: 'กรกฎาคม', status: 'ล่าช้า', docNo: '', pdfUrl: 'https://drive.google.com/file/d/1N0Re21pOhSh0bnEp5fM76h_jFd46rPm9/view?usp=sharing', updatedAt: '' },
-            { month: 'สิงหาคม', status: 'ดำเนินแล้ว', docNo: 'ฉ.2กดส.(ปด)1774/2569', pdfUrl: 'https://drive.google.com/file/d/1Bu30itorOA1mvQLdCoYAAbaM6JK_A6xA/view?usp=sharing', updatedAt: '' },
-            { month: 'กันยายน', status: 'ดำเนินแล้ว', docNo: 'ฉ.2กดส.(สซ)1953/2569', pdfUrl: 'https://drive.google.com/file/d/14T3gFMQwbACR1_tQevAK-X6Krmmv0nxZ/view?usp=sharing', updatedAt: '' },
-            { month: 'ตุลาคม', status: 'อยู่ระหว่างดำเนินการ', docNo: 'ฉ.2กดส.(สซ)2034/2569', pdfUrl: '', updatedAt: '' },
-            { month: 'พฤศจิกายน', status: '', docNo: '', pdfUrl: '', updatedAt: '' },
-            { month: 'ธันวาคม', status: '', docNo: '', pdfUrl: '', updatedAt: '' }
-        ];
+        const initialSheetData = [];
 
         let rawData = [];
 
@@ -218,10 +205,9 @@
                 const res = await fetch(sheetUrl);
                 const text = await res.text();
                 
-                // แก้ไข Syntax error ตรงนี้เรียบร้อย
                 const json = JSON.parse(text.substring(47, text.length - 2));
                 
-                // ตัดแถวแรกสุด (Header) ออก
+                // ใช้ .slice(1) เพื่อตัดแถวแรกสุด (Header ของ Google Sheet) ออก
                 const rows = json.table.rows.slice(1);
 
                 rawData = rows.map(row => ({
@@ -242,7 +228,7 @@
             }
         }
 
-        // ฟังก์ชันเมื่อคลิกปุ่มแต่ละปุ่ม
+        // ฟังก์ชันสลับ Sheet
         function handleWom() {
             currentSheet = SHEETS.WOM;
             setActiveButton('btn-wom');
@@ -267,7 +253,7 @@
             fetchData();
         }
 
-        // ฟังก์ชันช่วยเปลี่ยนสถานะปุ่มที่ถูกเลือก (Active state)
+        // ไฮไลต์ปุ่มที่ถูกเลือก
         function setActiveButton(activeId) {
             ['btn-wom', 'btn-smartplus', 'btn-registration', 'btn-ebill'].forEach(id => {
                 const btn = document.getElementById(id);
@@ -378,7 +364,7 @@
             document.getElementById('pdf-frame').src = '';
         }
 
-        // เริ่มต้นดึงข้อมูล Smart Plus ทันทีเมื่อเปิดหน้าเว็บ
+        // เริ่มต้นโหลดข้อมูล Smart Plus เป็นค่าแรกเริ่ม
         handleSmartPlus();
     </script>
 </body>
