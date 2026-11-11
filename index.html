@@ -148,13 +148,16 @@
                     <i class="fa-solid fa-file-pdf text-red-500 text-xl"></i>
                     <h3 id="modal-title" class="font-semibold text-slate-800">แสดงตัวอย่างเอกสาร</h3>
                 </div>
-                <div class="flex items-center gap-2">
-                    <a id="modal-download" href="#" target="_blank" class="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-medium px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition">
-                        <i class="fa-solid fa-download"></i> ดาวน์โหลด
-                    </a>
-                    <button onclick="closePdfModal()" class="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg">
-                        <i class="fa-solid fa-xmark text-lg"></i>
-                    </button>
+                    <div class="flex items-center gap-2">
+                    <button id="btn-smartplus" onclick="handleSmartPlus()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2.5 rounded-xl text-sm font-medium transition shadow-sm flex items-center gap-1.5">
+                    <i class="fa-solid fa-bolt"></i> Smart Plus
+                 </button>
+                    <button id="btn-registration" onclick="handleRegistration()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2.5 rounded-xl text-sm font-medium transition shadow-sm flex items-center gap-1.5">
+                    <i class="fa-solid fa-user-plus"></i> Registration
+                 </button>
+                    <button id="btn-ebill" onclick="handleEBill()" class="bg-amber-600 hover:bg-amber-700 text-white px-4 py-2.5 rounded-xl text-sm font-medium transition shadow-sm flex items-center gap-1.5">
+                      <i class="fa-solid fa-file-invoice-dollar"></i> E-Bill
+                </button>
                 </div>
             </div>
             <div class="flex-1 bg-slate-100">
@@ -164,10 +167,16 @@
     </div>
 
     <script>
-        const SHEET_ID = '1_e5Wct97w1fBu5gM4Dt53WtrMXN6zetiAJVu7YMaySg'; 
-        const SHEET_TITLE = 'WOM';
+       // กำหนด ID ของ Google Sheets ทั้งหมด
+        const SHEETS = {
+            WOM: { id: '1_e5Wct97w1fBu5gM4Dt53WtrMXN6zetiAJVu7YMaySg', title: 'WOM' },
+            SMART_PLUS: { id: '160OfrbyIp3f0ItwHdmt2HXu58O4-2QW1C6asCRTH8ec', title: 'Sheet1' },
+            REGISTRATION: { id: '1DOp0r5OszGYbNWF390iRxA-LR0sY8fAk2i6pumZbBfQ', title: 'Sheet1' },
+            EBILL: { id: '1jNq3Eueo2byJHdUQ--8MMW2tIw-fDJTG5CiejgrCr5A', title: 'Sheet1' }
+        };
 
-        const SHEET_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${SHEET_TITLE}`;
+        // ตั้งค่า Sheet เริ่มต้นเป็น Smart Plus (หรือเปลี่ยนเป็นตามที่ต้องการ)
+        let currentSheet = SHEETS.SMART_PLUS;
 
         const initialSheetData = [
             { month: 'มกราคม', status: '', docNo: '', pdfUrl: '', updatedAt: '' },
@@ -187,37 +196,82 @@
         let rawData = [];
 
         async function fetchData() {
-    try {
-        const res = await fetch(SHEET_URL);
-        const text = await res.text();
-        
-        const json = JSON.parse(text.substring(47, text.length - 2));
-        
-        //  ตัดแถวแรกสุด (Header) ออก โดยใช้ .slice(1)
-        const rows = json.table.rows.slice(1);
+            // แสดงสถานะกำลังโหลด
+            const tableBody = document.getElementById('data-table');
+            tableBody.innerHTML = `<tr><td colspan="6" class="py-12 text-center text-slate-400"><i class="fa-solid fa-spinner animate-spin text-2xl mb-2"></i><p>กำลังโหลดข้อมูล...</p></td></tr>`;
 
-        rawData = rows.map(row => ({
-            month: row.c[0] ? row.c[0].v : '',
-            status: row.c[1] ? row.c[1].v : '',
-            docNo: row.c[2] ? row.c[2].v : '',
-            pdfUrl: row.c[3] ? row.c[3].v : '',
-            updatedAt: row.c[4] ? row.c[4].v : ''
-        }));
+            const sheetUrl = `https://docs.google.com/spreadsheets/d/${currentSheet.id}/gviz/tq?tqx=out:json&sheet=${currentSheet.title}`;
 
-        updateStats(rawData);
-        renderTable(rawData);
-    } catch (err) {
-        console.warn("ไม่สามารถดึงข้อมูลแบบ Live Stream ได้ กำลังใช้ออฟไลน์สแนปชอตที่ตรงกับ Sheet:", err);
-        rawData = initialSheetData;
-        updateStats(rawData);
-        renderTable(rawData);
-    }
-}
+            try {
+                const res = await fetch(sheetUrl);
+                const text = await res.text();
+                
+                const json = JSON.parse(text.substring(47, text.length - 2));
+                
+                // ข้ามแถวแรกสุด (Header) ออกด้วย .slice(1)
+                const rows = json.table.rows.slice(1);
+
+                rawData = rows.map(row => ({
+                    month: row.c[0] ? row.c[0].v : '',
+                    status: row.c[1] ? row.c[1].v : '',
+                    docNo: row.c[2] ? row.c[2].v : '',
+                    pdfUrl: row.c[3] ? row.c[3].v : '',
+                    updatedAt: row.c[4] ? row.c[4].v : ''
+                }));
+
+                updateStats(rawData);
+                renderTable(rawData);
+            } catch (err) {
+                console.warn("ไม่สามารถดึงข้อมูลแบบ Live Stream ได้ กำลังใช้ออฟไลน์สแนปชอต:", err);
+                rawData = initialSheetData;
+                updateStats(rawData);
+                renderTable(rawData);
+            }
+        }
+
+        // ฟังก์ชันเมื่อคลิกปุ่มแต่ละปุ่ม
+        function handleSmartPlus() {
+            currentSheet = SHEETS.SMART_PLUS;
+            setActiveButton('btn-smartplus');
+            fetchData();
+        }
+
+        function handleRegistration() {
+            currentSheet = SHEETS.REGISTRATION;
+            setActiveButton('btn-registration');
+            fetchData();
+        }
+
+        function handleEBill() {
+            currentSheet = SHEETS.EBILL;
+            setActiveButton('btn-ebill');
+            fetchData();
+        }
+
+        // ฟังก์ชันช่วยเปลี่ยนสถานะปุ่มที่ถูกเลือก (Active state)
+        function setActiveButton(activeId) {
+            ['btn-smartplus', 'btn-registration', 'btn-ebill'].forEach(id => {
+                const btn = document.getElementById(id);
+                if (btn) {
+                    if (id === activeId) {
+                        btn.classList.add('ring-2', 'ring-offset-2', 'ring-indigo-500', 'font-bold');
+                    } else {
+                        btn.classList.remove('ring-2', 'ring-offset-2', 'ring-indigo-500', 'font-bold');
+                    }
+                }
+            });
+        }
 
         function renderTable(data) {
             const tableBody = document.getElementById('data-table');
             if (data.length === 0) {
-                tableBody.innerHTML = `<tr><td colspan="6" class="py-8 text-center text-slate-400">ไม่พบข้อมูลในตาราง</td></tr>`;
+                tableBody.innerHTML = `
+                    <tr>
+                        <td colspan="6" class="py-12 text-center text-slate-400">
+                            <i class="fa-solid fa-folder-open text-3xl mb-2 text-slate-300"></i>
+                            <p class="text-base font-medium">ไม่พบข้อมูล</p>
+                        </td>
+                    </tr>`;
                 return;
             }
 
@@ -257,15 +311,20 @@
                 case 'ยกเลิก':
                     return `<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-rose-50 text-rose-700 border border-rose-200"><span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span>ล่าช้า</span>`;
                 default:
-                    return `<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-600">${status || '-'}</span>`;
+                    return `<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-600">${status || 'ไม่พบข้อมูล'}</span>`;
             }
         }
 
         function updateStats(data) {
-            document.getElementById('stat-total').innerText = data.length;
-            document.getElementById('stat-completed').innerText = data.filter(d => d.status?.trim() === 'ดำเนินแล้ว' || d.status?.trim() === 'เสร็จสิ้น').length;
-            document.getElementById('stat-pending').innerText = data.filter(d => d.status?.trim() === 'อยู่ระหว่างดำเนินการ' || d.status?.trim() === 'รอดำเนินการ' || d.status?.trim() === 'ดำเนินการ').length;
-            document.getElementById('stat-progress').innerText = data.filter(d => d.status?.trim() === 'ล่าช้า' || d.status?.trim() === 'ยกเลิก').length;
+            const total = data.length;
+            const completed = data.filter(d => d.status?.trim() === 'ดำเนินแล้ว' || d.status?.trim() === 'เสร็จสิ้น').length;
+            const pending = data.filter(d => d.status?.trim() === 'อยู่ระหว่างดำเนินการ' || d.status?.trim() === 'รอดำเนินการ' || d.status?.trim() === 'ดำเนินการ').length;
+            const progress = data.filter(d => d.status?.trim() === 'ล่าช้า' || d.status?.trim() === 'ยกเลิก').length;
+
+            document.getElementById('stat-total').innerText = total > 0 ? total : 'ไม่พบข้อมูล';
+            document.getElementById('stat-completed').innerText = completed > 0 ? completed : 'ไม่พบข้อมูล';
+            document.getElementById('stat-pending').innerText = pending > 0 ? pending : 'ไม่พบข้อมูล';
+            document.getElementById('stat-progress').innerText = progress > 0 ? progress : 'ไม่พบข้อมูล';
         }
 
         function applyFilters() {
@@ -300,7 +359,8 @@
             document.getElementById('pdf-frame').src = '';
         }
 
-        fetchData();
+        // เริ่มต้นดึงข้อมูลทันทีเมื่อเปิดหน้าเว็บ
+        handleSmartPlus();
     </script>
 </body>
 </html>
