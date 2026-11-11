@@ -76,9 +76,9 @@
             </div>
         </div>
 
-        <!-- Filter Controls -->
+        <!-- Filter Controls & Action Buttons -->
         <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm mb-6 flex flex-col md:flex-row gap-4 justify-between items-center">
-            <div class="flex flex-col md:flex-row gap-3 w-full md:w-auto">
+            <div class="flex flex-wrap md:flex-row gap-3 w-full md:w-auto items-center">
                 <!-- Filter Month -->
                 <select id="filter-month" onchange="applyFilters()" class="bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
                     <option value="">ทุกเดือน (มกราคม - ธันวาคม)</option>
@@ -103,6 +103,22 @@
                     <option value="อยู่ระหว่างดำเนินการ">อยู่ระหว่างดำเนินการ</option>
                     <option value="ล่าช้า">ล่าช้า</option>
                 </select>
+
+                <!-- ปุ่มเลือก Sheet ข้อมูล -->
+                <div class="flex items-center gap-2 flex-wrap">
+                    <button id="btn-wom" onclick="handleWom()" class="bg-slate-700 hover:bg-slate-800 text-white px-3.5 py-2 rounded-xl text-sm font-medium transition shadow-sm flex items-center gap-1.5">
+                        <i class="fa-solid fa-list-check"></i> WOM
+                    </button>
+                    <button id="btn-smartplus" onclick="handleSmartPlus()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3.5 py-2 rounded-xl text-sm font-medium transition shadow-sm flex items-center gap-1.5">
+                        <i class="fa-solid fa-bolt"></i> Smart Plus
+                    </button>
+                    <button id="btn-registration" onclick="handleRegistration()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-3.5 py-2 rounded-xl text-sm font-medium transition shadow-sm flex items-center gap-1.5">
+                        <i class="fa-solid fa-user-plus"></i> Registration
+                    </button>
+                    <button id="btn-ebill" onclick="handleEBill()" class="bg-amber-600 hover:bg-amber-700 text-white px-3.5 py-2 rounded-xl text-sm font-medium transition shadow-sm flex items-center gap-1.5">
+                        <i class="fa-solid fa-file-invoice-dollar"></i> E-Bill
+                    </button>
+                </div>
             </div>
 
             <!-- Search Box -->
@@ -148,16 +164,13 @@
                     <i class="fa-solid fa-file-pdf text-red-500 text-xl"></i>
                     <h3 id="modal-title" class="font-semibold text-slate-800">แสดงตัวอย่างเอกสาร</h3>
                 </div>
-                    <div class="flex items-center gap-2">
-                    <button id="btn-smartplus" onclick="handleSmartPlus()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2.5 rounded-xl text-sm font-medium transition shadow-sm flex items-center gap-1.5">
-                    <i class="fa-solid fa-bolt"></i> Smart Plus
-                 </button>
-                    <button id="btn-registration" onclick="handleRegistration()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2.5 rounded-xl text-sm font-medium transition shadow-sm flex items-center gap-1.5">
-                    <i class="fa-solid fa-user-plus"></i> Registration
-                 </button>
-                    <button id="btn-ebill" onclick="handleEBill()" class="bg-amber-600 hover:bg-amber-700 text-white px-4 py-2.5 rounded-xl text-sm font-medium transition shadow-sm flex items-center gap-1.5">
-                      <i class="fa-solid fa-file-invoice-dollar"></i> E-Bill
-                </button>
+                <div class="flex items-center gap-2">
+                    <a id="modal-download" href="#" target="_blank" class="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-medium px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition">
+                        <i class="fa-solid fa-download"></i> ดาวน์โหลด
+                    </a>
+                    <button onclick="closePdfModal()" class="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg">
+                        <i class="fa-solid fa-xmark text-lg"></i>
+                    </button>
                 </div>
             </div>
             <div class="flex-1 bg-slate-100">
@@ -167,7 +180,7 @@
     </div>
 
     <script>
-       // กำหนด ID ของ Google Sheets ทั้งหมด
+        // กำหนด ID ของ Google Sheets ทั้งหมด
         const SHEETS = {
             WOM: { id: '1_e5Wct97w1fBu5gM4Dt53WtrMXN6zetiAJVu7YMaySg', title: 'WOM' },
             SMART_PLUS: { id: '160OfrbyIp3f0ItwHdmt2HXu58O4-2QW1C6asCRTH8ec', title: 'Sheet1' },
@@ -175,7 +188,7 @@
             EBILL: { id: '1jNq3Eueo2byJHdUQ--8MMW2tIw-fDJTG5CiejgrCr5A', title: 'Sheet1' }
         };
 
-        // ตั้งค่า Sheet เริ่มต้นเป็น Smart Plus (หรือเปลี่ยนเป็นตามที่ต้องการ)
+        // ตั้งค่า Sheet เริ่มต้นเป็น Smart Plus
         let currentSheet = SHEETS.SMART_PLUS;
 
         const initialSheetData = [
@@ -196,7 +209,6 @@
         let rawData = [];
 
         async function fetchData() {
-            // แสดงสถานะกำลังโหลด
             const tableBody = document.getElementById('data-table');
             tableBody.innerHTML = `<tr><td colspan="6" class="py-12 text-center text-slate-400"><i class="fa-solid fa-spinner animate-spin text-2xl mb-2"></i><p>กำลังโหลดข้อมูล...</p></td></tr>`;
 
@@ -206,9 +218,10 @@
                 const res = await fetch(sheetUrl);
                 const text = await res.text();
                 
+                // แก้ไข Syntax error ตรงนี้เรียบร้อย
                 const json = JSON.parse(text.substring(47, text.length - 2));
                 
-                // ข้ามแถวแรกสุด (Header) ออกด้วย .slice(1)
+                // ตัดแถวแรกสุด (Header) ออก
                 const rows = json.table.rows.slice(1);
 
                 rawData = rows.map(row => ({
@@ -230,6 +243,12 @@
         }
 
         // ฟังก์ชันเมื่อคลิกปุ่มแต่ละปุ่ม
+        function handleWom() {
+            currentSheet = SHEETS.WOM;
+            setActiveButton('btn-wom');
+            fetchData();
+        }
+
         function handleSmartPlus() {
             currentSheet = SHEETS.SMART_PLUS;
             setActiveButton('btn-smartplus');
@@ -250,13 +269,13 @@
 
         // ฟังก์ชันช่วยเปลี่ยนสถานะปุ่มที่ถูกเลือก (Active state)
         function setActiveButton(activeId) {
-            ['btn-smartplus', 'btn-registration', 'btn-ebill'].forEach(id => {
+            ['btn-wom', 'btn-smartplus', 'btn-registration', 'btn-ebill'].forEach(id => {
                 const btn = document.getElementById(id);
                 if (btn) {
                     if (id === activeId) {
-                        btn.classList.add('ring-2', 'ring-offset-2', 'ring-indigo-500', 'font-bold');
+                        btn.classList.add('ring-2', 'ring-offset-2', 'ring-indigo-500', 'font-bold', 'scale-105');
                     } else {
-                        btn.classList.remove('ring-2', 'ring-offset-2', 'ring-indigo-500', 'font-bold');
+                        btn.classList.remove('ring-2', 'ring-offset-2', 'ring-indigo-500', 'font-bold', 'scale-105');
                     }
                 }
             });
@@ -359,7 +378,7 @@
             document.getElementById('pdf-frame').src = '';
         }
 
-        // เริ่มต้นดึงข้อมูลทันทีเมื่อเปิดหน้าเว็บ
+        // เริ่มต้นดึงข้อมูล Smart Plus ทันทีเมื่อเปิดหน้าเว็บ
         handleSmartPlus();
     </script>
 </body>
