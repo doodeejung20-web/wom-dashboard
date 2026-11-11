@@ -17,32 +17,17 @@
 <body class="bg-slate-50 min-h-screen text-slate-800">
 
     <!-- Header / Navigation -->
-<!-- ตัวอย่างโค้ดการ์ดแบบจัดระเบียบ Flexbox แนวตั้ง -->
-<div class="group relative bg-slate-900/60 hover:bg-slate-900 border border-slate-800 hover:border-indigo-500/50 p-6 rounded-3xl transition-all duration-300 hover:-translate-y-1.5 shadow-xl flex flex-col justify-between">
-    
-    <!-- ส่วนหัว: ไอคอนและข้อความ -->
-    <div>
-        <div class="flex items-center gap-4 mb-4">
-            <div class="w-14 h-14 bg-indigo-500/10 text-indigo-400 rounded-2xl flex items-center justify-center text-2xl group-hover:scale-110 group-hover:bg-indigo-500 group-hover:text-white transition-all duration-300 shadow-lg">
-                <i class="fa-solid fa-file-lines"></i>
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-10">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
+            <div class="flex items-center space-x-3">
+                <div class="bg-indigo-600 text-white p-2.5 rounded-xl shadow-md shadow-indigo-200">
+                    <i class="fa-solid fa-file-invoice text-xl"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold text-slate-900">Check List </h1>
+                    <p class="text-xs text-slate-500">ระบบติดตามงาน </p>
+                </div>
             </div>
-            <div>
-                <h3 class="text-xl font-bold text-white group-hover:text-indigo-400 transition-colors">Check List</h3>
-                <p class="text-sm text-slate-400">ระบบติดตามงาน</p>
-            </div>
-        </div>
-    </div>
-
-    <!-- ส่วนท้าย: ปุ่มรีเฟรช / ปุ่มกด (แยกบรรทัดอย่างเป็นระเบียบ ไม่ทับซ้อน) -->
-    <div class="mt-4 pt-4 border-t border-slate-800/80 flex items-center justify-between">
-        <a href="https://index-web-xi.vercel.app/" target="_blank" rel="noopener noreferrer" 
-           class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-indigo-500/10 text-indigo-400 hover:bg-indigo-500 hover:text-white text-xs font-semibold transition-all duration-200">
-            <i class="fa-solid fa-rotate"></i>
-            <span>รีเฟรชข้อมูล</span>
-        </a>
-    </div>
-
-</div>
             <button onclick="fetchData()" class="flex items-center gap-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 px-4 py-2 rounded-lg transition font-medium text-sm">
                 <i class="fa-solid fa-rotate-right"></i> รีเฟรชข้อมูล
             </button>
