@@ -127,6 +127,9 @@
                     <button id="btn-ebill" onclick="handleEBill()" class="bg-amber-600 hover:bg-amber-700 text-white px-3.5 py-2 rounded-xl text-sm font-medium transition shadow-sm flex items-center gap-1.5">
                         <i class="fa-solid fa-file-invoice-dollar"></i> E-Bill
                     </button>
+                    <button id="btn-fm006" onclick="handleFM006()" class="bg-cyan-600 hover:bg-cyan-700 text-white px-3.5 py-2 rounded-xl text-sm font-medium transition shadow-sm flex items-center gap-1.5">
+                        <i class="fa-solid fa-file-contract"></i> FM-006
+                    </button>
                 </div>
             </div>
 
@@ -189,13 +192,16 @@
     </div>
 
     <script>
+        // กำหนด ID และชื่อชีตของ Google Sheets ทั้ง 5 แหล่ง
         const SHEETS = {
             WOM: { id: '1_e5Wct97w1fBu5gM4Dt53WtrMXN6zetiAJVu7YMaySg', title: 'WOM' },
             SMART_PLUS: { id: '160OfrbyIp3f0ItwHdmt2HXu58O4-2QW1C6asCRTH8ec', title: 'SMP' },
             REGISTRATION: { id: '1DOp0r5OszGYbNWF390iRxA-LR0sY8fAk2i6pumZbBfQ', title: 'Registration' },
-            EBILL: { id: '1jNq3Eueo2byJHdUQ--8MMW2tIw-fDJTG5CiejgrCr5A', title: 'E-Bill' }
+            EBILL: { id: '1jNq3Eueo2byJHdUQ--8MMW2tIw-fDJTG5CiejgrCr5A', title: 'E-Bill' },
+            FM006: { id: '1WKRaiEo3xOMu7SW_Zj5PhwH3Z71_N84av-SF6xflSJM', title: 'FM006' }
         };
 
+        // ค่าเริ่มต้นเป็น Smart Plus
         let currentSheet = SHEETS.SMART_PLUS;
         const initialSheetData = [];
         let rawData = [];
@@ -223,13 +229,14 @@
                 updateStats(rawData);
                 renderTable(rawData);
             } catch (err) {
-                console.warn("ไม่สามารถดึงข้อมูลแบบ Live Stream ได้:", err);
+                console.warn("ไม่สามารถดึงข้อมูลแบบ Live Stream ได้ กำลังใช้ออฟไลน์สแนปชอต:", err);
                 rawData = initialSheetData;
                 updateStats(rawData);
                 renderTable(rawData);
             }
         }
 
+        // ฟังก์ชันสลับ Sheet
         function handleWom() {
             currentSheet = SHEETS.WOM;
             setActiveButton('btn-wom');
@@ -254,8 +261,15 @@
             fetchData();
         }
 
+        function handleFM006() {
+            currentSheet = SHEETS.FM006;
+            setActiveButton('btn-fm006');
+            fetchData();
+        }
+
+        // ไฮไลต์ปุ่มที่ถูกเลือก
         function setActiveButton(activeId) {
-            ['btn-wom', 'btn-smartplus', 'btn-registration', 'btn-ebill'].forEach(id => {
+            ['btn-wom', 'btn-smartplus', 'btn-registration', 'btn-ebill', 'btn-fm006'].forEach(id => {
                 const btn = document.getElementById(id);
                 if (btn) {
                     if (id === activeId) {
@@ -364,6 +378,7 @@
             document.getElementById('pdf-frame').src = '';
         }
 
+        // เริ่มต้นโหลดข้อมูล Smart Plus เป็นค่าแรกเริ่ม
         handleSmartPlus();
     </script>
 </body>
