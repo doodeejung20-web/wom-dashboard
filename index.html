@@ -192,7 +192,6 @@
     </div>
 
     <script>
-        // กำหนด ID และชื่อชีตของ Google Sheets ทั้ง 5 แหล่ง
         const SHEETS = {
             WOM: { id: '1_e5Wct97w1fBu5gM4Dt53WtrMXN6zetiAJVu7YMaySg', title: 'WOM' },
             SMART_PLUS: { id: '160OfrbyIp3f0ItwHdmt2HXu58O4-2QW1C6asCRTH8ec', title: 'SMP' },
@@ -201,7 +200,6 @@
             FM006: { id: '1WKRaiEo3xOMu7SW_Zj5PhwH3Z71_N84av-SF6xflSJM', title: 'FM006' }
         };
 
-        // ค่าเริ่มต้นเป็น Smart Plus
         let currentSheet = SHEETS.SMART_PLUS;
         const initialSheetData = [];
         let rawData = [];
@@ -236,7 +234,6 @@
             }
         }
 
-        // ฟังก์ชันสลับ Sheet
         function handleWom() {
             currentSheet = SHEETS.WOM;
             setActiveButton('btn-wom');
@@ -267,7 +264,6 @@
             fetchData();
         }
 
-        // ไฮไลต์ปุ่มที่ถูกเลือก
         function setActiveButton(activeId) {
             ['btn-wom', 'btn-smartplus', 'btn-registration', 'btn-ebill', 'btn-fm006'].forEach(id => {
                 const btn = document.getElementById(id);
@@ -336,9 +332,23 @@
 
         function updateStats(data) {
             const total = data.length;
-            const completed = data.filter(d => d.status?.trim() === 'ดำเนินแล้ว' || d.status?.trim() === 'เสร็จสิ้น').length;
-            const pending = data.filter(d => d.status?.trim() === 'อยู่ระหว่างดำเนินการ' || d.status?.trim() === 'รอดำเนินการ' || d.status?.trim() === 'ดำเนินการ').length;
-            const progress = data.filter(d => d.status?.trim() === 'ล่าช้า' || d.status?.trim() === 'ยกเลิก').length;
+            const completed = data.filter(d => {
+                const s = d.status?.trim();
+                return s === 'ดำเนินแล้ว' || s === 'เสร็จสิ้น';
+            }).length;
+
+            const pending = data.filter(d => {
+                const s = d.status?.trim();
+                return s === 'อยู่ระหว่างดำเนินการ' || s === 'รอดำเนินการ' || s === 'ดำเนินการ';
+            }).length;
+
+            // นับ "ล่าช้า", "ยกเลิก", "ไม่พบข้อมูล" รวมถึงสถานะอื่นๆ ที่ไม่เข้าสองกลุ่มแรก
+            const progress = data.filter(d => {
+                const s = d.status?.trim() || 'ไม่พบข้อมูล';
+                const isCompleted = s === 'ดำเนินแล้ว' || s === 'เสร็จสิ้น';
+                const isPending = s === 'อยู่ระหว่างดำเนินการ' || s === 'รอดำเนินการ' || s === 'ดำเนินการ';
+                return !isCompleted && !isPending;
+            }).length;
 
             document.getElementById('stat-total').innerText = total > 0 ? total : 'ไม่พบข้อมูล';
             document.getElementById('stat-completed').innerText = completed > 0 ? completed : 'ไม่พบข้อมูล';
@@ -378,7 +388,6 @@
             document.getElementById('pdf-frame').src = '';
         }
 
-        // เริ่มต้นโหลดข้อมูล Smart Plus เป็นค่าแรกเริ่ม
         handleSmartPlus();
     </script>
 </body>
